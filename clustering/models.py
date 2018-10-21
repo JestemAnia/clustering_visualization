@@ -19,7 +19,7 @@ class Cluster(models.Model):
 
 class Node(models.Model):
     coordinates = models.OneToOneField(Point, on_delete=models.CASCADE)
-    cluster = models.ForeignKey(Cluster, blank=True, null=True, related_name='nodes', on_delete=models.CASCADE)
+    cluster = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return "(%f, %f, %f)" % (self.coordinates.x, self.coordinates.y, self.coordinates.z)

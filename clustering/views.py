@@ -17,20 +17,16 @@ class MainView(APIView):
     logger = logging.getLogger(__name__)
 
     def get(self, request):
-        queryset = Node.objects.all()
+        queryset = Point.objects.all()
         # coordinates = Node.objects.select_related('coordinates').all()
-        coordinates = queryset.coordinates
-        self.logger.error(coordinates)
 
-        return render(request, self.template_name, self.scatter_plot(coordinates))
+        return render(request, self.template_name, self.scatter_plot(queryset))
 
     def scatter_plot(self, queryset, labels=1):
-        # self.logger.error(queryset)
 
         xdata = queryset.values_list('x').distinct()
         ydata = queryset.values_list('y').distinct()
-        self.logger.error(ydata)
-        self.logger.error(type(xdata[0]))
+
         chartdata = {
             'x': xdata,
             'y': ydata
@@ -57,13 +53,23 @@ class NodeViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 def kmeans(request, n_cluster=2, random_state=0):
-    # request musi mieć w body node'y
-    queryset = Node.objects.all()
+    logger = logging.getLogger(__name__)
 
-    y_pred = cluster.KMeans(n_clusters=n_cluster, random_state=random_state).fit(xdata)
-    labels = y_pred.labels
-    centroids = y_pred.cluster_centers_
-    n_iter = y_pred.n_iter
-    return Response({"message": y_pred})
+    queryset = Node.objects.all()
+    X = [[node.coordinates.x, node.coordinates.y] for node in queryset]
+    y_pred = cluster.KMeans(n_clusters=n_cluster, random_state=random_state).fit_predict(X)
+    # labels = y_pred.labels
+    # centroids = y_pred.cluster_centers_
+    # n_iter = y_pred.n_iter
+    assign_cluster(y_pred, queryset)
+
+
+def assign_cluster(predicted_labels, nodes):
+    for i, node in enumerate(nodes):
+        node.cluster = predicted_labels[i]
+        node.save()
+
+
+
 
 
