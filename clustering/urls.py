@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from clustering.views import MainView, NodeViewSet, ClusterViewSet, kmeans
+from clustering.views import MainView, NodeViewSet, ClusterViewSet, kmeans, generate_blobs
 
 
 urlpatterns = [
@@ -17,6 +17,7 @@ urlpatterns = [
     }), name='Cluster_detail'),
     # kmean
     url(r'kmeans/$', kmeans, name='kmeans'),
+    url(r'generate/$', generate_blobs, name='generate_data'),
     # the main view
     url(r'$', MainView.as_view(), name='Point_list'),
 ]

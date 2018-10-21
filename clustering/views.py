@@ -1,14 +1,14 @@
-from clustering.serializers import PointSerializer, ClusterSerializer, NodeSerializer
+from clustering.serializers import ClusterSerializer, NodeSerializer
 from clustering.models import Point, Cluster, Node
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 import logging
+from sklearn import cluster
+from sklearn.datasets import make_blobs
 from rest_framework.response import Response
 from rest_framework import status
-from sklearn import cluster
-from django.db.models import Q
 
 
 class MainView(APIView):
@@ -17,28 +17,8 @@ class MainView(APIView):
     logger = logging.getLogger(__name__)
 
     def get(self, request):
-        queryset = Point.objects.all()
-        # coordinates = Node.objects.select_related('coordinates').all()
-
-        return render(request, self.template_name, self.scatter_plot(queryset))
-
-    def scatter_plot(self, queryset, labels=1):
-
-        xdata = queryset.values_list('x').distinct()
-        ydata = queryset.values_list('y').distinct()
-
-        chartdata = {
-            'x': xdata,
-            'y': ydata
-        }
-
-        charttype = "scatterChart"
-        data = {
-            'charttype': charttype,
-            'chartdata': chartdata,
-        }
-
-        return data
+        queryset = Node.objects.all()
+        return render(request, self.template_name)
 
 
 class ClusterViewSet(viewsets.ModelViewSet):
@@ -52,9 +32,7 @@ class NodeViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST'])
-def kmeans(request, n_cluster=2, random_state=0):
-    logger = logging.getLogger(__name__)
-
+def kmeans(request, n_cluster=3, random_state=0):
     queryset = Node.objects.all()
     X = [[node.coordinates.x, node.coordinates.y] for node in queryset]
     y_pred = cluster.KMeans(n_clusters=n_cluster, random_state=random_state).fit_predict(X)
@@ -62,12 +40,29 @@ def kmeans(request, n_cluster=2, random_state=0):
     # centroids = y_pred.cluster_centers_
     # n_iter = y_pred.n_iter
     assign_cluster(y_pred, queryset)
+    dictionary = [obj.as_dict() for obj in queryset]
+
+    return Response(dictionary)
 
 
 def assign_cluster(predicted_labels, nodes):
     for i, node in enumerate(nodes):
         node.cluster = predicted_labels[i]
         node.save()
+
+
+@api_view(['POST'])
+def generate_blobs(request):
+    n_samples = 1500
+    random_state = 170
+    xdata, ydata = make_blobs(n_samples=n_samples, random_state=random_state)
+    for x1 in xdata:
+        point = Point.objects.create(x=x1[0], y=x1[1], z=0)
+        node_instance = Node.objects.create(coordinates=point)
+        node_instance.save()
+    return Response({'message': 'Success!'}, status=status.HTTP_201_CREATED)
+
+
 
 
 
