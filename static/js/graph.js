@@ -1,5 +1,12 @@
-function post2() {
-    $.post("kmeans/", {})
+const kmeans_button = $('#kmeans');
+
+kmeans_button.click(function() {
+    post('kmeans/')
+});
+
+
+function post(method) {
+    $.post(method, {})
         .done(function (data) {
             let labels = [];
             let set_of_clusters = [];
@@ -54,7 +61,7 @@ function post2() {
                 },
                 title: 'Cluster Visualization'
             };
-            Plotly.newPlot('myDiv', d, layout, {displayModeBar: false});
+            Plotly.newPlot('myDiv', d, layout, {displayModeBar: false} );
         });
 }
 
@@ -71,4 +78,3 @@ function create_cluster(x, y, name) {
 }
 
 
-post2();
