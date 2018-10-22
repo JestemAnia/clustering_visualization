@@ -3,7 +3,31 @@ function post2() {
         .done(function (data) {
             let labels = [];
             let set_of_clusters = [];
+            let minx;
+            let maxx;
+            let miny;
+            let maxy;
             $.each(data, function (i, val) {
+                if (i === 0) {
+                    minx = val.coordinates.x;
+                    maxx = val.coordinates.x;
+                    miny = val.coordinates.y;
+                    maxy = val.coordinates.y;
+                }
+                else {
+                    if (val.coordinates.x < minx){
+                        minx = val.coordinates.x
+                    }
+                    if (val.coordinates.x > maxx){
+                        maxx = val.coordinates.x
+                    }
+                    if (val.coordinates.y < miny){
+                        miny = val.coordinates.y
+                    }
+                    if (val.coordinates.y > maxy){
+                        maxy = val.coordinates.y
+                    }
+                }
                 labels.push(val.cluster);
                 if ($.inArray(val, set_of_clusters) === -1) set_of_clusters.push(val.cluster);
             });
@@ -23,12 +47,12 @@ function post2() {
             });
             let layout = {
                 xaxis: {
-                    range: [0.75, 5.25]
+                    range: [minx - 0.5, maxx + 0.5]
                 },
                 yaxis: {
-                    range: [0, 8]
+                    range: [miny - 0.5, maxy + 0.5]
                 },
-                title: 'Data Labels Hover'
+                title: 'Cluster Visualization'
             };
             Plotly.newPlot('myDiv', d, layout, {displayModeBar: false});
         });
