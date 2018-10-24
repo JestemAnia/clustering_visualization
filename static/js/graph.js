@@ -1,12 +1,48 @@
 const kmeans_button = $('#kmeans');
-
 kmeans_button.click(function() {
-    post('kmeans/')
+    preferences('kmeans')
 });
 
 
-function post(method) {
-    $.post(method, {})
+function preferences(method) {
+    var parameters = $('#parameters')[0];
+    switch (method) {
+        case 'kmeans':
+
+            var input = document.createElement("input"); //input element, text
+            input.setAttribute('type',"number");
+            input.setAttribute('name',"n_cluster");
+            input.setAttribute('defaultValue',"2");
+
+            var submit = document.createElement("input"); //input element, Submit button
+            submit.setAttribute('type',"submit");
+            submit.setAttribute('value',"Submit");
+
+
+            submit.onclick = function() {
+                let n_cluster = input.value;
+                post(method + '/', n_cluster)
+            };
+
+            parameters.appendChild(input);
+            parameters.appendChild(submit);
+            document.getElementsByTagName('body')[0].appendChild(parameters);
+
+
+            break;
+        case 'dbscan':
+            break;
+    }
+
+
+}
+
+
+
+
+//  evaluate algorithm
+function post(method, clusters) {
+    $.post(method, {n_cluster: clusters})
         .done(function (data) {
             let labels = [];
             let set_of_clusters = [];

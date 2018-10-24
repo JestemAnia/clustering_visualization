@@ -33,6 +33,9 @@ class NodeViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 def kmeans(request, n_cluster=10, random_state=0):
+    n_cluster = int(request.POST['n_cluster'])
+    logger = logging.getLogger(__name__)
+    logger.error(n_cluster)
     queryset = Node.objects.all()
     X = [[node.coordinates.x, node.coordinates.y] for node in queryset]
     y_pred = cluster.KMeans(n_clusters=n_cluster, random_state=random_state).fit_predict(X)
