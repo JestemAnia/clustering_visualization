@@ -3,34 +3,59 @@ kmeans_button.click(function() {
     preferences('kmeans')
 });
 
+const dbscan_button = $('#dbscan');
+dbscan_button.click(function() {
+    preferences('dbscan')
+});
+
 
 function preferences(method) {
     var parameters = $('#parameters')[0];
     switch (method) {
         case 'kmeans':
 
-            var input = document.createElement("input"); //input element, text
+            let input = document.createElement("input"); //input element, text
             input.setAttribute('type',"number");
             input.setAttribute('name',"n_cluster");
             input.setAttribute('defaultValue',"2");
 
-            var submit = document.createElement("input"); //input element, Submit button
+            let submit = document.createElement("input"); //input element, Submit button
             submit.setAttribute('type',"submit");
             submit.setAttribute('value',"Submit");
 
 
             submit.onclick = function() {
                 let n_cluster = input.value;
-                post(method + '/', n_cluster)
+                let kmeans_dictionary = {n_cluster: n_cluster, max_iter: '1'};
+                post(method + '/', kmeans_dictionary)
             };
 
             parameters.appendChild(input);
             parameters.appendChild(submit);
             document.getElementsByTagName('body')[0].appendChild(parameters);
 
-
             break;
+
         case 'dbscan':
+            let eps_element = document.createElement("input"); //input element, text
+            eps_element.setAttribute('type',"number");
+            eps_element.setAttribute('name',"eps");
+            eps_element.setAttribute('defaultValue',"0.5");
+
+            let submit_dbscan = document.createElement("input"); //input element, Submit button
+            submit_dbscan.setAttribute('type',"submit");
+            submit_dbscan.setAttribute('value',"Submit");
+
+
+            submit_dbscan.onclick = function() {
+                let eps = eps_element.value;
+                let dbscan_dictionary = {eps: eps};
+                post(method + '/', dbscan_dictionary)
+            };
+
+            parameters.appendChild(eps_element);
+            parameters.appendChild(submit_dbscan);
+            document.getElementsByTagName('body')[0].appendChild(parameters);
             break;
     }
 
@@ -41,8 +66,8 @@ function preferences(method) {
 
 
 //  evaluate algorithm
-function post(method, clusters) {
-    $.post(method, {n_cluster: clusters})
+function post(method, dict) {
+    $.post(method, dict)
         .done(function (data) {
             let labels = [];
             let set_of_clusters = [];

@@ -32,16 +32,28 @@ class NodeViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST'])
-def kmeans(request, n_cluster=10, random_state=0):
+def kmeans(request, random_state=0):
     n_cluster = int(request.POST['n_cluster'])
+    max_iter = int(request.POST['max_iter'])
     logger = logging.getLogger(__name__)
-    logger.error(n_cluster)
+    logger.error(max_iter)
     queryset = Node.objects.all()
     X = [[node.coordinates.x, node.coordinates.y] for node in queryset]
-    y_pred = cluster.KMeans(n_clusters=n_cluster, random_state=random_state).fit_predict(X)
-    # labels = y_pred.labels
-    # centroids = y_pred.cluster_centers_
-    # n_iter = y_pred.n_iter
+    y_pred = cluster.KMeans(n_clusters=n_cluster,
+                            max_iter=max_iter,
+                            random_state=123).fit_predict(X)
+    assign_cluster(y_pred, queryset)
+    dictionary = [obj.as_dict() for obj in queryset]
+
+    return Response(dictionary)
+
+
+@api_view(['POST'])
+def dbscan(request):
+    eps = float(request.POST['eps'])
+    queryset = Node.objects.all()
+    X = [[node.coordinates.x, node.coordinates.y] for node in queryset]
+    y_pred = cluster.DBSCAN(eps=eps).fit_predict(X)
     assign_cluster(y_pred, queryset)
     dictionary = [obj.as_dict() for obj in queryset]
 
