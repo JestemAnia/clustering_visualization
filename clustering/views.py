@@ -5,20 +5,24 @@ from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 import logging
-from sklearn import cluster
 from sklearn.datasets import make_blobs
 from rest_framework.response import Response
 from rest_framework import status
+import importlib
+import os
+
+logger = logging.getLogger(__name__)
 
 
 class MainView(APIView):
     template_name = 'clustering/index.html'
     serializer_class = NodeSerializer
-    logger = logging.getLogger(__name__)
 
     def get(self, request):
         queryset = Node.objects.all()
-        return render(request, self.template_name)
+
+        plugins = [f for f in os.listdir(os.path.abspath('clustering/plugins')) if f.endswith('.py')]
+        return render(request, self.template_name, {'plugins': plugins})
 
 
 class ClusterViewSet(viewsets.ModelViewSet):
@@ -29,35 +33,6 @@ class ClusterViewSet(viewsets.ModelViewSet):
 class NodeViewSet(viewsets.ModelViewSet):
     serializer_class = NodeSerializer
     queryset = Node.objects.all()
-
-
-@api_view(['POST'])
-def kmeans(request, random_state=0):
-    n_cluster = int(request.POST['n_cluster'])
-    max_iter = int(request.POST['max_iter'])
-    logger = logging.getLogger(__name__)
-    logger.error(max_iter)
-    queryset = Node.objects.all()
-    X = [[node.coordinates.x, node.coordinates.y] for node in queryset]
-    y_pred = cluster.KMeans(n_clusters=n_cluster,
-                            max_iter=max_iter,
-                            random_state=123).fit_predict(X)
-    assign_cluster(y_pred, queryset)
-    dictionary = [obj.as_dict() for obj in queryset]
-
-    return Response(dictionary)
-
-
-@api_view(['POST'])
-def dbscan(request):
-    eps = float(request.POST['eps'])
-    queryset = Node.objects.all()
-    X = [[node.coordinates.x, node.coordinates.y] for node in queryset]
-    y_pred = cluster.DBSCAN(eps=eps).fit_predict(X)
-    assign_cluster(y_pred, queryset)
-    dictionary = [obj.as_dict() for obj in queryset]
-
-    return Response(dictionary)
 
 
 def assign_cluster(predicted_labels, nodes):
@@ -78,7 +53,13 @@ def generate_blobs(request):
     return Response({'message': 'Success!'}, status=status.HTTP_201_CREATED)
 
 
-
+@api_view(['POST'])
+def execute_algorithm(request, method):
+    PLUGIN_NAME = method
+    plugin = importlib.import_module('clustering.plugins.' + PLUGIN_NAME, '.')
+    plugin_instance = plugin.Plugin()
+    queryset = Node.objects.all()
+    return plugin_instance.execute(request, queryset)
 
 
 
