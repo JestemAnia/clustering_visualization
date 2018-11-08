@@ -38,3 +38,12 @@ class Node(models.Model):
 
     def __str__(self):
         return "(%f, %f, %f)" % (self.coordinates.x, self.coordinates.y, self.coordinates.z)
+
+
+# def user_directory_path(instance, filename):
+#     return 'clustering/plugins/{0}'.format(filename)
+#
+#
+# class PluginFile(models.Model):
+#     file = models.FileField(upload_to=user_directory_path)
+

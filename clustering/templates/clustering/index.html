@@ -6,7 +6,7 @@
 
     <title>Clustering Visualization</title>
     <script src="{% static 'js/jquery.js' %}"></script>
-
+    <link rel="shortcut icon" href="#" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
     <link href="{% static 'css/bootstrap-grid.css' %}" rel="stylesheet">
@@ -21,25 +21,33 @@
 <body>
 
 <br/>
-<div class="container" style="margin-left: 0">
-    <div class="dropdown" style="display: inline">
-          <button class="btn btn-secondary dropdown-toggle"
-                  type="button"
-                  id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Select Algorithm
-          </button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                {% for plugin in plugins %}
-                    <button type="button" id={{  plugin|to_id }} class="dropdown-item"> {{  plugin|to_name }}</button>
-                {% endfor %}
+<div class="container" style="margin-left: 0; margin-left: 10px">
+    <div class="row">
+        <div class="dropdown" style="display: inline-block">
+              <button class="btn btn-secondary dropdown-toggle"
+                      type="button"
+                      id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Select Algorithm
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for plugin in plugins %}
+                        <button type="button" id={{  plugin|to_id }} class="dropdown-item"> {{  plugin|to_name }}</button>
+                    {% endfor %}
 
-          </div>
+              </div>
+        </div>
     </div>
-    <div id="myDiv" style="display: inline-block"><!-- Plotly chart will be drawn inside this DIV --></div>
+    <br/>
 
-</div><!--/.container-->
+    <div class="row">
+        <div id="parameters" style="display: inline-block"></div>
+    </div>
 
-<div id="parameters">
+    <br/>
+
+    <div class="row">
+        <div id="myDiv" style="display: inline-block"><!-- Plotly chart will be drawn inside this DIV --></div>
+    </div>
 </div>
 
 <script src="{% static 'js/bootstrap.bundle.js' %}"></script>

@@ -1,5 +1,8 @@
 from sklearn import cluster
 from rest_framework.response import Response
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Plugin:
@@ -20,3 +23,8 @@ class Plugin:
         dictionary = [obj.as_dict() for obj in queryset]
 
         return Response(dictionary)
+
+    def parameters(self):
+        return {'n_cluster': 'number',
+                'max_iter': 'number'}
+

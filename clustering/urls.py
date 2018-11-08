@@ -1,6 +1,6 @@
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
-from clustering.views import MainView, NodeViewSet, ClusterViewSet, generate_blobs, execute_algorithm
+from clustering.views import MainView, NodeViewSet, ClusterViewSet, generate_blobs, execute_algorithm, get_params, get_methods, upload_file
 import importlib
 import os
 
@@ -14,7 +14,10 @@ urlpatterns = [
         'get': 'list',
         'post': 'create'
     }), name='Cluster_detail'),
+    url(r'^(?P<method>\w+?)/parameters/$', get_params),
     url(r'^generate/$', generate_blobs, name='generate_data'),
+    url(r'^methods/$', get_methods, name='get_methods'),
+    url(r'^upload/$', upload_file, name='upload_file'),
 ]
 
 plugins = [f for f in os.listdir(os.path.abspath('clustering/plugins')) if f.endswith('.py')]

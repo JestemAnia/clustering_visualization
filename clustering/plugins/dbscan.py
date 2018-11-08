@@ -16,3 +16,6 @@ class Plugin:
         dictionary = [obj.as_dict() for obj in queryset]
 
         return Response(dictionary)
+
+    def parameters(self):
+        return {'eps': 'float'}
