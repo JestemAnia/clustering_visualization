@@ -105,7 +105,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-MEDIA_ROOT = BASE_DIR
+MEDIA_URL = '/plugins/'
+MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'clustering', 'plugins')
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 

@@ -1,6 +1,8 @@
-from clustering.serializers import ClusterSerializer, NodeSerializer
-from clustering.models import Point, Cluster, Node
+from clustering.serializers import ClusterSerializer, NodeSerializer, PluginFileSerializer
+from clustering.models import Point, Cluster, Node, PluginFile
 from django.shortcuts import render
+from rest_framework.parsers import MultiPartParser, FormParser
+
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
@@ -33,6 +35,23 @@ class ClusterViewSet(viewsets.ModelViewSet):
 class NodeViewSet(viewsets.ModelViewSet):
     serializer_class = NodeSerializer
     queryset = Node.objects.all()
+
+
+class FileView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        logger.error(request.data)
+        logger.error(request.data['file'])
+        file_serializer = PluginFileSerializer(data=request.data)
+        logger.error(file_serializer)
+        file_serializer.is_valid()
+        logger.error(file_serializer.errors)
+        if file_serializer.is_valid():
+            file_serializer.save()
+            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def assign_cluster(predicted_labels, nodes):

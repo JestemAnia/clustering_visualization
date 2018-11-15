@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from clustering.models import Cluster, Point, Node
-
+from clustering.models import Cluster, Point, Node, PluginFile
 
 
 class PointSerializer(serializers.ModelSerializer):
@@ -40,3 +39,9 @@ class ClusterSerializer(serializers.ModelSerializer):
         for node in nodes:
             Node.objects.create(cluster=cluster, **node)
         return cluster
+
+
+class PluginFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PluginFile
+        fields = ('file',)

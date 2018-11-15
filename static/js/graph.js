@@ -97,11 +97,15 @@ function createParametersDiv(params, method){
     console.log(parametersDiv)
     let input = [];
     let i = 0;
+    let t;
+    let br;
     for (let key in params)
     {
         input[i] = document.createElement("input");
         input[i].setAttribute('type',params[key]);
         input[i].setAttribute('name',key);
+        t = document.createTextNode(key + ': ');
+        parametersDiv.appendChild(t);
         parametersDiv.appendChild(input[i]);
         i = i + 1;
     }
@@ -124,3 +128,24 @@ function createParametersDiv(params, method){
 }
 
 
+
+
+formdata = new FormData();
+$("#image_to_upload").on("change", function() {
+        var file = this.files[0];
+        if (formdata && file.name.endsWith('.py')) {
+            $("#subimt_upload").prop('disabled', false);
+            $("#subimt_upload").off().on("click", function(){
+                formdata.append("file", file);
+                $.ajax({
+                    url: "upload/",
+                    type: "POST",
+                    data: formdata,
+                    processData: false,
+                    contentType: false,
+                    success:function(){}
+                });
+            });
+
+        }
+    });
