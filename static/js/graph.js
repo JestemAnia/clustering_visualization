@@ -29,7 +29,8 @@ function post(method, dict) {
             let maxx;
             let miny;
             let maxy;
-            $.each(data, function (i, val) {
+            $.each(data, function (key, value) {
+                $.each(value, function (i, val) {
                 if (i === 0) {
                     minx = val.coordinates.x;
                     maxx = val.coordinates.x;
@@ -53,9 +54,11 @@ function post(method, dict) {
                 labels.push(val.cluster);
                 if ($.inArray(val, set_of_clusters) === -1) set_of_clusters.push(val.cluster);
             });
+
+
             let X = [];
             let Y = [];
-            $.each(data, function (i, val) {
+            $.each(value, function (i, val) {
                 if (X[val.cluster] === undefined) {
                     X[val.cluster] = [];
                     Y[val.cluster] = [];
@@ -78,6 +81,7 @@ function post(method, dict) {
             };
             Plotly.newPlot('myDiv', d, layout, {displayModeBar: false} );
         });
+    });
 }
 
 

@@ -33,7 +33,7 @@ class Node(models.Model):
         return {
             "id": self.id,
             "coordinates": self.coordinates.as_dict(),
-            "cluster": int(self.cluster)
+            # "cluster": int(self.cluster)
         }
 
     def __str__(self):

@@ -41,12 +41,8 @@ class FileView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
-        logger.error(request.data)
-        logger.error(request.data['file'])
         file_serializer = PluginFileSerializer(data=request.data)
-        logger.error(file_serializer)
         file_serializer.is_valid()
-        logger.error(file_serializer.errors)
         if file_serializer.is_valid():
             file_serializer.save()
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
@@ -63,8 +59,8 @@ def assign_cluster(predicted_labels, nodes):
 @api_view(['POST'])
 def generate_blobs(request):
     n_samples = 1500
-    random_state = 170
-    xdata, ydata = make_blobs(n_samples=n_samples, random_state=random_state)
+    random_state = 10
+    xdata, ydata = make_blobs(n_samples=n_samples, random_state=random_state, cluster_std=0.9)
     for x1 in xdata:
         point = Point.objects.create(x=x1[0], y=x1[1], z=0)
         node_instance = Node.objects.create(coordinates=point)
@@ -83,16 +79,27 @@ def import_file(method):
 def execute_algorithm(request, method):
     plugin_instance = import_file(method)
     queryset = Node.objects.all()
-    logger.error(method)
-    logger.error(request.POST)
-    return plugin_instance.execute(request, queryset)
+
+    dictionary = [obj.as_dict() for obj in queryset]
+    history = plugin_instance.execute(request, queryset)
+
+    dict_of_clustered_data = {}
+    for key, val in history.items():
+        logger.error(key)
+        logger.error(val)
+        logger.error(len(val))
+        logger.error(len(dictionary))
+        for i, data in enumerate(dictionary):
+            data['cluster'] = val[i]
+        dict_of_clustered_data[key] = dictionary
+
+    return Response(dict_of_clustered_data)
 
 
 @api_view(['GET'])
 def get_params(request, method):
     plugin_instance = import_file(method)
     params = plugin_instance.parameters()
-    logger.error(params)
     return Response(params)
 
 
@@ -102,18 +109,7 @@ def get_methods(request):
     return Response(plugins)
 
 
-# def handle_uploaded_file(files):
-#     pass
-#
-# @api_view(['POST'])
-# def upload_file(request):
-#     form = UploadFileForm(request.POST, request.FILES)
-#     if form.is_valid():
-#             handle_uploaded_file(request.FILES['file'])
-#             return HttpResponseRedirect('/success/url/')
-#     else:
-#         form = UploadFileForm()
-#     return render(request, 'upload.html', {'form': form})
+
 
 
 
