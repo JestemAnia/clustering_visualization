@@ -18,7 +18,7 @@ class Plugin:
         for i in range(0, max_iter):
             logger.error(previous_clusters)
             if i == 0:
-                kmeans = cluster.KMeans(init=np.array([[0, 0], [1, 1], [-1, -1], [20, 20]]), n_clusters=n_cluster, random_state=123, max_iter=1).fit(X)
+                kmeans = cluster.KMeans(n_clusters=n_cluster, random_state=123, max_iter=1).fit(X)
             else:
                 kmeans = cluster.KMeans(init=previous_clusters, n_clusters=n_cluster, random_state=123, max_iter=1).fit(X)
 

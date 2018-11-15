@@ -30,6 +30,7 @@ function post(method, dict) {
             let miny;
             let maxy;
             $.each(data, function (key, value) {
+                console.log(key);
                 $.each(value, function (i, val) {
                 if (i === 0) {
                     minx = val.coordinates.x;
