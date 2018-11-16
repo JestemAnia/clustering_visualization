@@ -6,7 +6,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
-import logging
+import logging, collections, copy
 from sklearn.datasets import make_blobs
 from rest_framework.response import Response
 from rest_framework import status
@@ -59,8 +59,8 @@ def assign_cluster(predicted_labels, nodes):
 @api_view(['POST'])
 def generate_blobs(request):
     n_samples = 1500
-    random_state = 10
-    xdata, ydata = make_blobs(n_samples=n_samples, random_state=random_state, cluster_std=0.9)
+    random_state = 21
+    xdata, ydata = make_blobs(n_samples=n_samples, random_state=random_state, cluster_std=0.99)
     for x1 in xdata:
         point = Point.objects.create(x=x1[0], y=x1[1], z=0)
         node_instance = Node.objects.create(coordinates=point)
@@ -84,14 +84,11 @@ def execute_algorithm(request, method):
     history = plugin_instance.execute(request, queryset)
 
     dict_of_clustered_data = {}
+
     for key, val in history.items():
-        logger.error(key)
-        logger.error(val)
-        logger.error(len(val))
-        logger.error(len(dictionary))
         for i, data in enumerate(dictionary):
             data['cluster'] = val[i]
-        dict_of_clustered_data[key] = dictionary
+        dict_of_clustered_data[key] = copy.deepcopy(dictionary)
 
     return Response(dict_of_clustered_data)
 

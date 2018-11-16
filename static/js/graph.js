@@ -23,14 +23,17 @@ function preferences(method) {
 function post(method, dict) {
     $.post(method, dict)
         .done(function (data) {
+            let frames = [];
             let labels = [];
             let set_of_clusters = [];
             let minx;
             let maxx;
             let miny;
             let maxy;
+            let layout = {};
+            let d0 =[];
+            let sliderSteps = [];
             $.each(data, function (key, value) {
-                console.log(key);
                 $.each(value, function (i, val) {
                 if (i === 0) {
                     minx = val.coordinates.x;
@@ -71,17 +74,79 @@ function post(method, dict) {
             $.each(X, function (i, val) {
                 d.push(create_cluster(X[i], Y[i], 'Cluster ' + i));
             });
-            let layout = {
+            sliderSteps.push({
+                    method: 'animate',
+                    label: key,
+                    args: [[key], {
+                        mode: 'immediate',
+                        transition: {duration: 0},
+                        frame: {duration: 300, redraw: false},
+                    }]
+                });
+            layout = {
                 xaxis: {
                     range: [minx - 0.5, maxx + 0.5]
                 },
                 yaxis: {
                     range: [miny - 0.5, maxy + 0.5]
                 },
-                title: 'Cluster Visualization'
+                title: 'Cluster Visualization',
+                hovermode: 'closest',
+                updatemenus: [{
+                      x: 0,
+                      y: 0,
+                      yanchor: 'top',
+                      xanchor: 'left',
+                      showactive: false,
+                      direction: 'left',
+                      type: 'buttons',
+                      pad: {t: 87, r: 10},
+                      buttons: [{
+                        method: 'animate',
+                        args: [null, {
+                          mode: 'immediate',
+                          fromcurrent: true,
+                          transition: {duration: 0},
+                          frame: {duration: 500, redraw: false}
+                        }],
+                        label: 'Play'
+                      }, {
+                        method: 'animate',
+                        args: [[null], {
+                          mode: 'immediate',
+                          transition: {duration: 0},
+                          frame: {duration: 0, redraw: false}
+                        }],
+                        label: 'Pause'
+                      }]
+                    }],
+                    sliders: [{
+                          pad: {l: 130, t: 55},
+                          currentvalue: {
+                            visible: true,
+                            prefix: 'Iteration:',
+                            xanchor: 'right',
+                            font: {size: 20, color: '#666'}
+                          },
+                          steps: sliderSteps
+                        }]
             };
-            Plotly.newPlot('myDiv', d, layout, {displayModeBar: false} );
-        });
+
+            frames.push({
+                'name': key-1,
+                'data': d
+            });
+
+            if(key === '1'){
+                d0=d;
+            }
+            });
+
+        Plotly.newPlot('myDiv', {
+            data: d0,
+            layout: layout,
+            frames: frames
+        })
     });
 }
 
@@ -99,11 +164,9 @@ function create_cluster(x, y, name) {
 
 function createParametersDiv(params, method){
     let parametersDiv = $('#parameters')[0];
-    console.log(parametersDiv)
     let input = [];
     let i = 0;
     let t;
-    let br;
     for (let key in params)
     {
         input[i] = document.createElement("input");
