@@ -58,7 +58,7 @@ def assign_cluster(predicted_labels, nodes):
 
 @api_view(['POST'])
 def generate_blobs(request):
-    n_samples = 1500
+    n_samples = 100
     random_state = 21
     xdata, ydata = make_blobs(n_samples=n_samples, random_state=random_state, cluster_std=0.99)
     for x1 in xdata:
@@ -81,7 +81,7 @@ def execute_algorithm(request, method):
     queryset = Node.objects.all()
 
     dictionary = [obj.as_dict() for obj in queryset]
-    history = plugin_instance.execute(request, queryset)
+    history, labels = plugin_instance.execute(request, queryset)
 
     dict_of_clustered_data = {}
 
@@ -90,7 +90,11 @@ def execute_algorithm(request, method):
             data['cluster'] = val[i]
         dict_of_clustered_data[key] = copy.deepcopy(dictionary)
 
-    return Response(dict_of_clustered_data)
+    full_data = {}
+    full_data['data'] = dict_of_clustered_data
+    full_data['labels'] = labels
+
+    return Response(full_data)
 
 
 @api_view(['GET'])

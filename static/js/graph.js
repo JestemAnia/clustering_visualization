@@ -19,13 +19,30 @@ function preferences(method) {
         });
 }
 
+// if there is -1 in labels, this function will create new label > 0 and remove -1
+function validLabels(labels, lastLabel){
+    let newLabel = [];
+    let index = labels.indexOf(-1);
+    if (index > -1) {
+        for (let i=0; i<labels.length; i++){
+            if(i !== index){
+                newLabel.push(labels[i])
+            }
+        }
+        newLabel.push(lastLabel + 1)
+        return newLabel
+    }
+    return labels
+}
 
 function post(method, dict) {
     $.post(method, dict)
-        .done(function (data) {
+        .done(function (full_data) {
+            let labelsSet = full_data['labels'];
+            let lastLabel = Math.max.apply(null, labelsSet);
+            let validatedLabels = validLabels(labelsSet, lastLabel);
+            let data = full_data['data'];
             let frames = [];
-            let labels = [];
-            let set_of_clusters = [];
             let minx;
             let maxx;
             let miny;
@@ -35,46 +52,71 @@ function post(method, dict) {
             let sliderSteps = [];
             $.each(data, function (key, value) {
                 $.each(value, function (i, val) {
-                if (i === 0) {
-                    minx = val.coordinates.x;
-                    maxx = val.coordinates.x;
-                    miny = val.coordinates.y;
-                    maxy = val.coordinates.y;
-                }
-                else {
-                    if (val.coordinates.x < minx){
-                        minx = val.coordinates.x
+                    if (i === 0) {
+                        minx = val.coordinates.x;
+                        maxx = val.coordinates.x;
+                        miny = val.coordinates.y;
+                        maxy = val.coordinates.y;
                     }
-                    if (val.coordinates.x > maxx){
-                        maxx = val.coordinates.x
+                    else {
+                        if (val.coordinates.x < minx){
+                            minx = val.coordinates.x
+                        }
+                        if (val.coordinates.x > maxx){
+                            maxx = val.coordinates.x
+                        }
+                        if (val.coordinates.y < miny){
+                            miny = val.coordinates.y
+                        }
+                        if (val.coordinates.y > maxy){
+                            maxy = val.coordinates.y
+                        }
                     }
-                    if (val.coordinates.y < miny){
-                        miny = val.coordinates.y
+                });
+
+                let X = {};
+                let Y = {};
+                $.each(value, function (i, val) {
+
+                    if (val.cluster == -1) {
+                        let new_key = lastLabel + 1
+                        if (X[new_key] === undefined) {
+                            X[new_key] = [];
+                            Y[new_key] = [];
+                        }
+                        X[new_key] = [];
+                        Y[new_key] = [];
+                        X[new_key].push(val.coordinates.x);
+                        Y[new_key].push(val.coordinates.y);
                     }
-                    if (val.coordinates.y > maxy){
-                        maxy = val.coordinates.y
+                    else {
+                        if (X[val.cluster] === undefined) {
+                            X[val.cluster] = [];
+                            Y[val.cluster] = [];
+                        }
+                        X[val.cluster].push(val.coordinates.x);
+                        Y[val.cluster].push(val.coordinates.y);
                     }
-                }
-                labels.push(val.cluster);
-                if ($.inArray(val, set_of_clusters) === -1) set_of_clusters.push(val.cluster);
-            });
+
+                });
+                let d = [];
+                $.each(validatedLabels, function (i, val) {
+                    let name;
+                    if (labelsSet.includes(-1.0) && val === lastLabel + 1){
+                        name = 'Noise'
+                    }
+                    else {
+                        name = 'Cluster ' + i
+                    }
+                    if(X[i] === undefined){
+                        d.push(create_cluster([], [], name, validatedLabels));
+                        return true;
+                    }
+                    d.push(create_cluster(X[i], Y[i], name, validatedLabels));
+                });
 
 
-            let X = [];
-            let Y = [];
-            $.each(value, function (i, val) {
-                if (X[val.cluster] === undefined) {
-                    X[val.cluster] = [];
-                    Y[val.cluster] = [];
-                }
-                X[val.cluster].push(val.coordinates.x);
-                Y[val.cluster].push(val.coordinates.y);
-            });
-            let d = [];
-            $.each(X, function (i, val) {
-                d.push(create_cluster(X[i], Y[i], 'Cluster ' + i));
-            });
-            sliderSteps.push({
+                sliderSteps.push({
                     method: 'animate',
                     label: key,
                     args: [[key], {
@@ -83,54 +125,55 @@ function post(method, dict) {
                         frame: {duration: 300, redraw: false},
                     }]
                 });
-            layout = {
-                xaxis: {
-                    range: [minx - 0.5, maxx + 0.5]
-                },
-                yaxis: {
-                    range: [miny - 0.5, maxy + 0.5]
-                },
-                title: 'Cluster Visualization',
-                hovermode: 'closest',
-                updatemenus: [{
-                      x: 0,
-                      y: 0,
-                      yanchor: 'top',
-                      xanchor: 'left',
-                      showactive: false,
-                      direction: 'left',
-                      type: 'buttons',
-                      pad: {t: 87, r: 10},
-                      buttons: [{
-                        method: 'animate',
-                        args: [null, {
-                          mode: 'immediate',
-                          fromcurrent: true,
-                          transition: {duration: 0},
-                          frame: {duration: 500, redraw: false}
-                        }],
-                        label: 'Play'
-                      }, {
-                        method: 'animate',
-                        args: [[null], {
-                          mode: 'immediate',
-                          transition: {duration: 0},
-                          frame: {duration: 0, redraw: false}
-                        }],
-                        label: 'Pause'
-                      }]
-                    }],
-                    sliders: [{
-                          pad: {l: 130, t: 55},
-                          currentvalue: {
-                            visible: true,
-                            prefix: 'Iteration:',
-                            xanchor: 'right',
-                            font: {size: 20, color: '#666'}
-                          },
-                          steps: sliderSteps
+                layout = {
+                    xaxis: {
+                        range: [minx - 0.5, maxx + 0.5]
+                    },
+                    yaxis: {
+                        range: [miny - 0.5, maxy + 0.5]
+                    },
+                    title: 'Cluster Visualization',
+                    hovermode: 'closest',
+                    updatemenus: [{
+                        x: 0,
+                        y: 0,
+                        yanchor: 'top',
+                        xanchor: 'left',
+                        showactive: false,
+                        direction: 'left',
+                        type: 'buttons',
+                        pad: {t: 87, r: 10},
+                        buttons: [
+                            {
+                                method: 'animate',
+                                args: [null, {
+                                    mode: 'immediate',
+                                    fromcurrent: true,
+                                    transition: {duration: 0},
+                                    frame: {duration: 500, redraw: false}
+                                }],
+                                label: 'Play'
+                            }, {
+                          method: 'animate',
+                          args: [[null], {
+                              mode: 'immediate',
+                              transition: {duration: 0},
+                              frame: {duration: 0, redraw: false}
+                          }],
+                          label: 'Pause'
                         }]
-            };
+                    }],
+                        sliders: [{
+                              pad: {l: 130, t: 55},
+                              currentvalue: {
+                                visible: true,
+                                prefix: 'Iteration:',
+                                xanchor: 'right',
+                                font: {size: 20, color: '#666'}
+                              },
+                              steps: sliderSteps
+                            }]
+                };
 
             frames.push({
                 'name': key-1,
@@ -151,8 +194,13 @@ function post(method, dict) {
 }
 
 
-function create_cluster(x, y, name) {
+function create_cluster(x, y, name, validatedLabels) {
+    if (x.length === 0){
+        x = [null];
+        y = [null];
+    }
     return {
+        visible: true,
         x: x,
         y: y,
         mode: 'markers',

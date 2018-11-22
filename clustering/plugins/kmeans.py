@@ -15,7 +15,7 @@ class Plugin:
         history = {}
         for i in range(0, max_iter):
             if i == 0:
-                kmeans = cluster.KMeans(n_clusters=n_cluster, random_state=123, max_iter=1).fit(X)
+                kmeans = cluster.KMeans(init='random', n_clusters=n_cluster, random_state=123, max_iter=1).fit(X)
             else:
                 kmeans = cluster.KMeans(init=previous_clusters, n_clusters=n_cluster, random_state=123, max_iter=1).fit(X)
 
@@ -23,7 +23,7 @@ class Plugin:
             y_pred = kmeans.predict(X)
 
             history[str(i+1)] = y_pred
-        return history
+        return history, list(range(n_cluster))
 
     def parameters(self):
         return {'n_cluster': 'number',
