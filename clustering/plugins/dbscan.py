@@ -1,14 +1,11 @@
-from sklearn import cluster
-from rest_framework.response import Response
 import numpy as np
-import logging, copy
-logger = logging.getLogger(__name__)
+import copy
 import math
 
 
 class Plugin:
     def __init__(self, *args, **kwargs):
-        print('Kmeans algorithm. Args: ', args, '\nkwargs: ', kwargs)
+        print('DBSCAN algorithm. Args: ', args, '\nkwargs: ', kwargs)
 
     def execute(self, request, queryset):
         X = np.array([[node.coordinates.x, node.coordinates.y] for node in queryset])

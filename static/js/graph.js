@@ -29,7 +29,7 @@ function validLabels(labels, lastLabel){
                 newLabel.push(labels[i])
             }
         }
-        newLabel.push(lastLabel + 1)
+        newLabel.push(lastLabel + 1);
         return newLabel
     }
     return labels
@@ -263,5 +263,8 @@ $("#image_to_upload").on("change", function() {
                 });
             });
 
+                console.log(file.name.slice(0,-3))
         }
-    });
+    })
+
+
